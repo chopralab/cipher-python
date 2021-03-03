@@ -88,12 +88,12 @@ class knowledge_graph:
         self.sro_list.remove(del_tup)
 
         self.nx_graph.remove_edge(del_tup[0], del_tup[2])
-        if self.nx_graph.degree[del_tup[0]] is 0:
+        if self.nx_graph.degree[del_tup[0]] == 0:
             self.nx_graph.remove_node(del_tup[0])
-        if self.nx_graph.degree[del_tup[2]] is 0:
+        if self.nx_graph.degree[del_tup[2]] == 0:
             self.nx_graph.remove_node(del_tup[2])
 
-        if self.adj_list.get(del_tup[0],-1) is not -1:
+        if self.adj_list.get(del_tup[0],-1) != -1:
             self.adj_list[del_tup[0]].remove(ro_tuple(del_tup[1],del_tup[2]))
                 
     # Modify the SRO list
@@ -138,7 +138,13 @@ class knowledge_graph:
     # Modify the NetworkX graph
     # TODO this is an optional implementation
     def mod_nx_graph(self, nx_graph):
-        pass
+        if not isinstance(nx_graph, type(nx.DiGraph())):
+            raise InvalidKGError
+        
+        self.nx_graph = nx_graph
+        self.__gen_sro_list_from_graph()
+        self.__gen_adj_list_from_sro()
+        
 
     # Generate a NetworkX graph from our SRO list
     def __gen_nx_graph_from_sro(self):
@@ -150,7 +156,7 @@ class knowledge_graph:
         self.nx_graph = G
 
     # Generate the adjacency matrix from our SRO list
-    def __gen_adj_list_fro_sro(self):
+    def __gen_adj_list_from_sro(self):
         adj_list = {}
         for elem in self.sro_list:
             if elem[0] not in adj_list:
@@ -259,11 +265,11 @@ class sro_tuple:
             raise InvalidSROTupleError
         
         # Get the value dependent on conditions
-        if index is "subject" or index is "sub":
+        if index == "subject" or index == "sub":
             return self.sub
-        elif index is "relationship" or index is "rel":
+        elif index == "relationship" or index == "rel":
             return self.rel
-        elif index is "object" or index is "obj":
+        elif index == "object" or index == "obj":
             return self.obj
         else:
             return self.tup[index]
@@ -290,22 +296,22 @@ class sro_tuple:
     def mod_sub(self, sub):
         if not isinstance(sub, str):
             raise InvalidSROTupleError
-        self.tup[0] = sub
         self.sub = sub
+        self.tup = (self.sub,self.rel,self.obj)
     
     # Modify the relationship
     def mod_rel(self, rel):
         if not isinstance(rel, str):
             raise InvalidSROTupleError
-        self.tup[1] = rel
         self.rel = rel
+        self.tup = (self.sub,self.rel,self.obj)
     
     # Modify the object
     def mod_obj(self, obj):
         if not isinstance(obj, (str, int, float)):
             raise InvalidSROTupleError
-        self.tup[2] = obj
         self.obj = obj
+        self.tup = (self.sub,self.rel,self.obj)
 
 # Ojbect/Relationship tuple class for use with Knowwledge Graphs
 class ro_tuple:
@@ -337,9 +343,9 @@ class ro_tuple:
         if isinstance(index,tuple):
             raise InvalidROTupleError
         
-        if index is "relationship" or index is "rel":
+        if index == "relationship" or index == "rel":
             return self.rel
-        elif index is "object" or index is "obj":
+        elif index == "object" or index == "obj":
             return self.obj
         else:
             return self.tup[index]
@@ -366,12 +372,12 @@ class ro_tuple:
     def mod_rel(self, rel):
         if not isinstance(rel, str):
             raise InvalidROTupleError
-        self.tup[0] = rel
         self.rel = rel
+        self.tup = (self.rel,self.obj)
     
     # Modify the object
     def mod_obj(self, obj):
         if not isinstance(obj, (str, int, float)):
             raise InvalidROTupleError
-        self.tup[1] = obj
         self.obj = obj
+        self.tup = (self.rel,self.obj)
